@@ -1,6 +1,7 @@
 package PastaJuizoFinal;
 import robocode.AdvancedRobot;
 import robocode.*;
+import robocode.util.Utils;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +15,7 @@ public class JuizoFinal extends AdvancedRobot
     Map<String, Inimigo> inimigos = new HashMap<String, Inimigo>();
     // nome do inimigo escolhido como alvo (null = nenhum)
     String alvo = null;
+	int sentido = 1;
 
     /**
      * run: JuizoFinal's default behavior
@@ -24,14 +26,33 @@ public class JuizoFinal extends AdvancedRobot
     setBodyColor(new Color(240, 208, 221));
     setRadarColor(new Color(240, 208, 221));
 	
+               // corpo, canhão e radar giram de forma independente
+        setAdjustGunForRobotTurn(true);
+        setAdjustRadarForGunTurn(true);
+        setAdjustRadarForRobotTurn(true);
+ 
         while(true) {
-            // Replace the next 4 lines with any behavior you would like
-            ahead(100);
-            turnGunRight(360);
-            back(100);
-            turnGunRight(360);
-        }
-    }
+            // radar varre a arena sem parar (o canhão não precisa mais girar 360)
+            setTurnRadarRightRadians(Double.POSITIVE_INFINITY);
+ 
+            // mesmo movimento de antes (frente 100 / trás 100), mas sem travar o loop
+            if (getDistanceRemaining() == 0) {
+                setAhead(100 * sentido);
+                sentido = -sentido;
+            }
+ 
+            // a cada tick, o canhão acompanha o alvo
+            mirarEAtirar();
+            execute();
+     	}
+	 }
+	 
+	public void mirarEAtirar() {
+        if (alvo == null) return;
+        Inimigo i = inimigos.get(alvo);
+        if (i == null || !recente(i)) return;
+}
+
     /**
      * onScannedRobot: What to do when you see another robot
      */
